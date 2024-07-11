@@ -29,6 +29,6 @@ qujielong_api = QunjielongApi(
     secret="secret",
     diskcache=Cache()
 )
-act_goods = qujielong_api.access_token_with_cache().query_act_goods(act_no="2404110172842728")
+act_goods = qujielong_api.access_token_with_cache().query_act_goods(act_no="")
 print(act_goods)
 ```
