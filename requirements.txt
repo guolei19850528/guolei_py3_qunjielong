@@ -1,0 +1,5 @@
+guolei-py3-requests
+setuptools
+wheel
+redis
+diskcache
