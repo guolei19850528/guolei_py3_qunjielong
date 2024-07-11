@@ -1,24 +1,24 @@
-# guolei_py3_qunjielong
+## 介绍
 
-## introduce
+**群接龙 API**
 
-**guolei python3 qunjielong library**
+[官方文档](https://console-docs.apipost.cn/preview/b4e4577f34cac87a/1b45a97352d07e60/)
 
-## software architecture
+## 软件架构
 
 ~python 3.*
 
-## installation tutorial
+## 安装教程
 
 ```shell
 pip install guolei-py3-qunjielong
 ```
 
-## catalog description
-### Qujielong Api Example
-```python
+## 目录说明
 
-# @see https://console-docs.apipost.cn/preview/b4e4577f34cac87a/1b45a97352d07e60/
+### Qujielong Api 示例
+
+```python
 
 from diskcache import Cache
 
