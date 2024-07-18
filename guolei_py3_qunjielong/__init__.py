@@ -245,7 +245,7 @@ class Api(object):
             requests_response_callable: Callable = RequestsResponseCallable.status_code_200_json_addict_code_200_success_data,
             requests_request_args: Iterable = (),
             requests_request_kwargs: dict = {},
-    ) -> Union[dict, Dict]:
+    ) :
         requests_request_kwargs_json = Dict(requests_request_kwargs_json)
         requests_request_kwargs = Dict(requests_request_kwargs)
         requests_request_kwargs = Dict({
@@ -273,7 +273,7 @@ class Api(object):
             requests_response_callable: Callable = RequestsResponseCallable.status_code_200_json_addict_code_200_success_data,
             requests_request_args: Iterable = (),
             requests_request_kwargs: dict = {},
-    ) -> Union[dict, Dict]:
+    ) :
         requests_request_kwargs_json = Dict(requests_request_kwargs_json)
         requests_request_kwargs = Dict(requests_request_kwargs)
         requests_request_kwargs = Dict({
@@ -301,7 +301,7 @@ class Api(object):
             requests_response_callable: Callable = RequestsResponseCallable.status_code_200_json_addict_code_200_success_data,
             requests_request_args: Iterable = (),
             requests_request_kwargs: dict = {},
-    ) -> Union[dict, Dict]:
+    ) :
         requests_request_kwargs = Dict(requests_request_kwargs)
         requests_request_kwargs = Dict({
             "url": f"{self.base_url}/open/api/order/single/query_order_info",
@@ -328,7 +328,7 @@ class Api(object):
             requests_response_callable: Callable = RequestsResponseCallable.status_code_200_json_addict_code_200_success_data,
             requests_request_args: Iterable = (),
             requests_request_kwargs: dict = {},
-    ) -> Union[dict, Dict]:
+    ) :
         requests_request_kwargs = Dict(requests_request_kwargs)
         requests_request_kwargs = Dict({
             "url": f"{self.base_url}/open/api/order/multi/query_order_info",
@@ -355,7 +355,7 @@ class Api(object):
             requests_response_callable: Callable = RequestsResponseCallable.status_code_200_json_addict_code_200_success_data,
             requests_request_args: Iterable = (),
             requests_request_kwargs: dict = {},
-    ) -> Union[dict, Dict]:
+    ) :
         requests_request_kwargs = Dict(requests_request_kwargs)
         requests_request_kwargs = Dict({
             "url": f"{self.base_url}/open/api/act_goods/query_act_goods",
@@ -382,7 +382,7 @@ class Api(object):
             requests_response_callable: Callable = RequestsResponseCallable.status_code_200_json_addict_code_200_success_data,
             requests_request_args: Iterable = (),
             requests_request_kwargs: dict = {},
-    ) -> Union[dict, Dict]:
+    ) :
         requests_request_kwargs = Dict(requests_request_kwargs)
         requests_request_kwargs = Dict({
             "url": f"{self.base_url}/open/api/goods/get_goods_detail/{id}",
@@ -405,7 +405,7 @@ class Api(object):
             requests_response_callable: Callable = RequestsResponseCallable.status_code_200_json_addict_code_200_success_data,
             requests_request_args: Iterable = (),
             requests_request_kwargs: dict = {},
-    ) -> Union[dict, Dict]:
+    ) :
         requests_request_kwargs = Dict(requests_request_kwargs)
         requests_request_kwargs = Dict({
             "url": f"{self.base_url}/open/api/act/list_act_info",
