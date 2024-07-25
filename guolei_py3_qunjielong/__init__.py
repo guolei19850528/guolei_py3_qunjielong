@@ -181,7 +181,7 @@ class Api(object):
         cache_key = "_".join([
             f"guolei_py3_qunjielong",
             f"qunjielong",
-            f"api",
+            f"Api",
             f"redis",
             f"access_token",
             f"{hashlib.md5(self.base_url.encode('utf-8')).hexdigest()}",
@@ -207,7 +207,7 @@ class Api(object):
         cache_key = "_".join([
             f"guolei_py3_qunjielong",
             f"qunjielong",
-            f"api",
+            f"Api",
             f"diskcache",
             f"access_token",
             f"{hashlib.md5(self.base_url.encode('utf-8')).hexdigest()}",
