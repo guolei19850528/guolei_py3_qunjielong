@@ -112,7 +112,7 @@ class Api(object):
             if json_addict.code == 200 and isinstance(json_addict.success, bool) and json_addict.success:
                 self.access_token = json_addict.data
                 return True, response.status_code, json_addict.data
-        return False, response.status_code, Dict({})
+        return False, response, response.json()
 
     def open_auth_token_with_diskcache(
             self,
@@ -131,8 +131,8 @@ class Api(object):
             ])
             self.token_data = self.diskcache_instance.get(key=cache_key, default="")
             if not isinstance(self.token_data, str) or not len(self.token_data):
-                request_state, _, _ = self.open_auth_token(**open_auth_token_func_kwargs)
-                if request_state:
+                request_response_state, _, _ = self.open_auth_token(**open_auth_token_func_kwargs)
+                if request_response_state:
                     self.diskcache_instance.set(key=cache_key, value=self.access_token, expire=expire_time)
         else:
             self.open_auth_token(**open_auth_token_func_kwargs)
@@ -155,8 +155,8 @@ class Api(object):
             ])
             self.token_data = self.redis_instance.get(name=cache_key)
             if not isinstance(self.token_data, str) or not len(self.token_data):
-                request_state, _, _ = self.open_auth_token(**open_auth_token_func_kwargs)
-                if request_state:
+                request_response_state, _, _ = self.open_auth_token(**open_auth_token_func_kwargs)
+                if request_response_state:
                     self.redis_instance.setex(name=cache_key, value=self.access_token, time=expire_time)
         else:
             self.open_auth_token(**open_auth_token_func_kwargs)
@@ -201,7 +201,7 @@ class Api(object):
             if json_addict.code == 200 and isinstance(json_addict.success, bool) and json_addict.success:
                 self.access_token = json_addict.data
                 return True, response.status_code, json_addict.data
-        return False, response.status_code, Dict({})
+        return False, response, response.json()
 
     def open_api_order_single_query_order_info(
             self,
@@ -243,7 +243,7 @@ class Api(object):
             if json_addict.code == 200 and isinstance(json_addict.success, bool) and json_addict.success:
                 self.access_token = json_addict.data
                 return True, response.status_code, json_addict.data
-        return False, response.status_code, Dict({})
+        return False, response, response.json()
 
     def open_api_act_goods_query_act_goods(
             self,
@@ -285,7 +285,7 @@ class Api(object):
             if json_addict.code == 200 and isinstance(json_addict.success, bool) and json_addict.success:
                 self.access_token = json_addict.data
                 return True, response.status_code, json_addict.data
-        return False, response.status_code, Dict({})
+        return False, response, response.json()
 
     def open_api_act_goods_query_act_goods(
             self,
@@ -322,4 +322,4 @@ class Api(object):
             if json_addict.code == 200 and isinstance(json_addict.success, bool) and json_addict.success:
                 self.access_token = json_addict.data
                 return True, response.status_code, json_addict.data
-        return False, response.status_code, Dict({})
+        return False, response, response.json()
