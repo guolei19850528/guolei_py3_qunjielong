@@ -111,7 +111,7 @@ class Api(object):
             json_addict = Dict(response.json())
             if json_addict.code == 200 and isinstance(json_addict.success, bool) and json_addict.success:
                 self.access_token = json_addict.data
-                return True, response.status_code, json_addict.data
+                return True, response, json_addict.data
         return False, response, response.json()
 
     def open_auth_token_with_diskcache(
@@ -199,8 +199,7 @@ class Api(object):
         if response.status_code == 200:
             json_addict = Dict(response.json())
             if json_addict.code == 200 and isinstance(json_addict.success, bool) and json_addict.success:
-                self.access_token = json_addict.data
-                return True, response.status_code, json_addict.data
+                return True, response, json_addict.data
         return False, response, response.json()
 
     def open_api_order_single_query_order_info(
@@ -241,8 +240,7 @@ class Api(object):
         if response.status_code == 200:
             json_addict = Dict(response.json())
             if json_addict.code == 200 and isinstance(json_addict.success, bool) and json_addict.success:
-                self.access_token = json_addict.data
-                return True, response.status_code, json_addict.data
+                return True, response, json_addict.data
         return False, response, response.json()
 
     def open_api_act_goods_query_act_goods(
@@ -283,8 +281,7 @@ class Api(object):
         if response.status_code == 200:
             json_addict = Dict(response.json())
             if json_addict.code == 200 and isinstance(json_addict.success, bool) and json_addict.success:
-                self.access_token = json_addict.data
-                return True, response.status_code, json_addict.data
+                return True, response, json_addict.data
         return False, response, response.json()
 
     def open_api_act_goods_query_act_goods(
@@ -320,6 +317,5 @@ class Api(object):
         if response.status_code == 200:
             json_addict = Dict(response.json())
             if json_addict.code == 200 and isinstance(json_addict.success, bool) and json_addict.success:
-                self.access_token = json_addict.data
-                return True, response.status_code, json_addict.data
+                return True, response, json_addict.data
         return False, response, response.json()
