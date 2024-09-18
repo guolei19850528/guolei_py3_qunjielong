@@ -53,7 +53,7 @@ class Api(object):
 
     @property
     def base_url(self):
-        return self._base_url
+        return self._base_url[:-1] if self._base_url.endswith("/") else self._base_url
 
     @base_url.setter
     def base_url(self, base_url):
