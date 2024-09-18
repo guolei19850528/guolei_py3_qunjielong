@@ -22,7 +22,7 @@ pip install guolei-py3-qunjielong
 
 from diskcache import Cache
 
-from guolei_py3_qunjielong import Api as QunjielongApi
+from guolei_py3_qunjielong.v1.api import Api as QunjielongApi
 
 qujielong_api = QunjielongApi(
     base_url="https://openapi.qunjielong.com",

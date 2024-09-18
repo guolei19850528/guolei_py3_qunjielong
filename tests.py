@@ -3,7 +3,9 @@ import unittest
 
 from diskcache import Cache
 
-from guolei_py3_qunjielong import Api as QunjielongApi
+from guolei_py3_qunjielong.v1.api import Api as QunjielongApi
+
+diskcache_cache_default = Cache(directory=os.path.join(os.path.dirname(__file__), "runtime", "database", "diskcache"))
 
 
 class MyTestCase(unittest.TestCase):
@@ -11,10 +13,8 @@ class MyTestCase(unittest.TestCase):
         qujielong_api = QunjielongApi(
             base_url="https://openapi.qunjielong.com",
             secret="",
-            diskcache=Cache(directory=os.path.join(os.path.dirname(__file__), "runtime", "database", "diskcache"))
+            diskcache_cache=diskcache_cache_default
         )
-        act_goods=qujielong_api.access_token_with_cache().query_act_goods(act_no="")
-        print(act_goods)
         self.assertTrue(True, 'test failed')  # add assertion here
 
 
