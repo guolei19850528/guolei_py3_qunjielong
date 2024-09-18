@@ -109,7 +109,7 @@ class Api(object):
         request_func_kwargs = Dict(request_func_kwargs)
         request_func_kwargs.setdefault("url", f"{self.base_url}/open/api/ghome/getGhomeInfo")
         request_func_kwargs.setdefault("method", f"GET")
-        request_func_kwargs.setdefault("params", {})
+        request_func_kwargs.setdefault("params", Dict())
         request_func_kwargs.params.setdefault("accessToken", self.access_token)
         response = requests.request(**request_func_kwargs.to_dict())
         if Draft202012Validator({"type": "boolean", "const": True}).is_valid(
@@ -157,7 +157,7 @@ class Api(object):
         request_func_kwargs = Dict(request_func_kwargs)
         request_func_kwargs.setdefault("url", f"{self.base_url}/open/auth/token")
         request_func_kwargs.setdefault("method", f"GET")
-        request_func_kwargs.setdefault("params", {})
+        request_func_kwargs.setdefault("params", Dict())
         request_func_kwargs.params.setdefault("secret", self.secret)
         response = requests.request(**request_func_kwargs.to_dict())
         if Draft202012Validator({"type": "boolean", "const": True}).is_valid(
@@ -299,7 +299,7 @@ class Api(object):
         request_func_kwargs = Dict(request_func_kwargs)
         request_func_kwargs.setdefault("url", f"{self.base_url}/open/api/order/all/query_order_list")
         request_func_kwargs.setdefault("method", f"POST")
-        request_func_kwargs.setdefault("params", {})
+        request_func_kwargs.setdefault("params", Dict())
         request_func_kwargs.params.setdefault("accessToken", self.access_token)
         response = requests.request(**request_func_kwargs.to_dict())
         if Draft202012Validator({"type": "boolean", "const": True}).is_valid(
@@ -346,7 +346,7 @@ class Api(object):
         request_func_kwargs = Dict(request_func_kwargs)
         request_func_kwargs.setdefault("url", f"{self.base_url}/open/api/order/single/query_order_info")
         request_func_kwargs.setdefault("method", f"POST")
-        request_func_kwargs.setdefault("params", {})
+        request_func_kwargs.setdefault("params", Dict())
         request_func_kwargs.params.setdefault("accessToken", self.access_token)
         response = requests.request(**request_func_kwargs.to_dict())
         if Draft202012Validator({"type": "boolean", "const": True}).is_valid(
@@ -393,7 +393,7 @@ class Api(object):
         request_func_kwargs = Dict(request_func_kwargs)
         request_func_kwargs.setdefault("url", f"{self.base_url}/open/api/order/multi/query_order_info")
         request_func_kwargs.setdefault("method", f"POST")
-        request_func_kwargs.setdefault("params", {})
+        request_func_kwargs.setdefault("params", Dict())
         request_func_kwargs.params.setdefault("accessToken", self.access_token)
         response = requests.request(**request_func_kwargs.to_dict())
         if Draft202012Validator({"type": "boolean", "const": True}).is_valid(
@@ -447,7 +447,7 @@ class Api(object):
         request_func_kwargs = Dict(request_func_kwargs)
         request_func_kwargs.setdefault("url", f"{self.base_url}/open/api/goods/get_goods_detail/{goods_id}")
         request_func_kwargs.setdefault("method", f"GET")
-        request_func_kwargs.setdefault("params", {})
+        request_func_kwargs.setdefault("params", Dict())
         request_func_kwargs.params.setdefault("accessToken", self.access_token)
         response = requests.request(**request_func_kwargs.to_dict())
         if Draft202012Validator({"type": "boolean", "const": True}).is_valid(
@@ -494,7 +494,7 @@ class Api(object):
         request_func_kwargs = Dict(request_func_kwargs)
         request_func_kwargs.setdefault("url", f"{self.base_url}/open/api/goods/multi/get_goods_detail")
         request_func_kwargs.setdefault("method", f"POST")
-        request_func_kwargs.setdefault("params", {})
+        request_func_kwargs.setdefault("params", Dict())
         request_func_kwargs.params.setdefault("accessToken", self.access_token)
         response = requests.request(**request_func_kwargs.to_dict())
         if Draft202012Validator({"type": "boolean", "const": True}).is_valid(
@@ -540,7 +540,7 @@ class Api(object):
         request_func_kwargs = Dict(request_func_kwargs)
         request_func_kwargs.setdefault("url", f"{self.base_url}/open/api/act_goods/query_act_goods")
         request_func_kwargs.setdefault("method", f"POST")
-        request_func_kwargs.setdefault("params", {})
+        request_func_kwargs.setdefault("params", Dict())
         request_func_kwargs.params.setdefault("accessToken", self.access_token)
         response = requests.request(**request_func_kwargs.to_dict())
         if Draft202012Validator({"type": "boolean", "const": True}).is_valid(
@@ -586,7 +586,7 @@ class Api(object):
         request_func_kwargs = Dict(request_func_kwargs)
         request_func_kwargs.setdefault("url", f"{self.base_url}/open/api/act/query_actNo_list")
         request_func_kwargs.setdefault("method", f"POST")
-        request_func_kwargs.setdefault("params", {})
+        request_func_kwargs.setdefault("params", Dict())
         request_func_kwargs.params.setdefault("accessToken", self.access_token)
         response = requests.request(**request_func_kwargs.to_dict())
         if Draft202012Validator({"type": "boolean", "const": True}).is_valid(
@@ -632,7 +632,7 @@ class Api(object):
         request_func_kwargs = Dict(request_func_kwargs)
         request_func_kwargs.setdefault("url", f"{self.base_url}/open/api/act/list_act_info")
         request_func_kwargs.setdefault("method", f"POST")
-        request_func_kwargs.setdefault("params", {})
+        request_func_kwargs.setdefault("params", Dict())
         request_func_kwargs.params.setdefault("accessToken", self.access_token)
         response = requests.request(**request_func_kwargs.to_dict())
         if Draft202012Validator({"type": "boolean", "const": True}).is_valid(
