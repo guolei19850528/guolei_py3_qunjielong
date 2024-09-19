@@ -187,41 +187,42 @@ class Api(object):
 
     def access_token_with_diskcache_cache(
             self,
-            diskcache_cache_key: str = None,
-            diskcache_cache_expire: float = timedelta(minutes=110).total_seconds(),
+            key: str = None,
+            expire: float = timedelta(minutes=110).total_seconds(),
             query_access_token_func_kwargs: dict = {},
     ):
-        if not Draft202012Validator({"type": "number"}).is_valid(diskcache_cache_key):
-            diskcache_cache_expire = timedelta(minutes=110).total_seconds()
+        if not Draft202012Validator({"type": "number"}).is_valid(key):
+            expire = timedelta(minutes=110).total_seconds()
         if not Draft202012Validator({"type": "boolean", "const": True}).is_valid(
                 isinstance(query_access_token_func_kwargs, dict)):
             query_access_token_func_kwargs = {}
         query_access_token_func_kwargs = Dict(query_access_token_func_kwargs)
         if Draft202012Validator({"type": "boolean", "const": True}).is_valid(
                 isinstance(self.diskcache_cache, diskcache.Cache)):
-            if not Draft202012Validator({"type": "string", "minLength": 1}).is_valid(diskcache_cache_key):
-                diskcache_cache_key = "_".join([
+            if not Draft202012Validator({"type": "string", "minLength": 1}).is_valid(key):
+                key = "_".join([
                     "guolei_py3_qunjielong_v1_api_diskcache_cache",
                     "access_token",
-                    hashlib.md5(self.base_url.encode("utf-8")).hexdigest(),
-                    hashlib.md5(self.secret.encode("utf-8")).hexdigest(),
+                    hashlib.md5(
+                        f"{self.base_url}_{self.secret}".encode("utf-8")
+                    ).hexdigest(),
                 ])
-            self.access_token = self.diskcache_cache.get(diskcache_cache_key)
+            self.access_token = self.diskcache_cache.get(key)
         if Draft202012Validator({"type": "boolean", "const": True}).is_valid(
                 isinstance(self.query_home(), NoneType)):
             self.access_token = self.query_access_token(**query_access_token_func_kwargs.to_dict())
             if Draft202012Validator({"type": "string", "minLength": 1}).is_valid(self.access_token):
                 self.diskcache_cache.set(
-                    key=diskcache_cache_key,
+                    key=key,
                     value=self.access_token,
-                    expire=diskcache_cache_expire
+                    expire=expire
                 )
         return self
 
     def access_token_with_redis_cache(
             self,
-            redis_cache_key: str = None,
-            redis_cache_expire: Union[int, timedelta] = timedelta(minutes=110),
+            key: str = None,
+            expire: Union[int, timedelta] = timedelta(minutes=110),
             query_access_token_func_kwargs: dict = {},
     ):
         if not Draft202012Validator({"type": "boolean", "const": True}).is_valid(
@@ -230,46 +231,47 @@ class Api(object):
         query_access_token_func_kwargs = Dict(query_access_token_func_kwargs)
         if Draft202012Validator({"type": "boolean", "const": True}).is_valid(
                 isinstance(self.redis_cache, (redis.Redis, redis.StrictRedis))):
-            if not Draft202012Validator({"type": "string", "minLength": 1}).is_valid(redis_cache_key):
-                diskcache_cache_key = "_".join([
+            if not Draft202012Validator({"type": "string", "minLength": 1}).is_valid(key):
+                key = "_".join([
                     "guolei_py3_qunjielong_v1_api_redis_cache",
                     "access_token",
-                    hashlib.md5(self.base_url.encode("utf-8")).hexdigest(),
-                    hashlib.md5(self.secret.encode("utf-8")).hexdigest(),
+                    hashlib.md5(
+                        f"{self.base_url}_{self.secret}".encode("utf-8")
+                    ).hexdigest(),
                 ])
-            self.access_token = self.redis_cache.get(redis_cache_key)
+            self.access_token = self.redis_cache.get(key)
         if Draft202012Validator({"type": "boolean", "const": True}).is_valid(
                 isinstance(self.query_home(), NoneType)):
             self.access_token = self.query_access_token(**query_access_token_func_kwargs.to_dict())
             if Draft202012Validator({"type": "string", "minLength": 1}).is_valid(self.access_token):
                 self.redis_cache.setex(
-                    name=diskcache_cache_key,
+                    name=key,
                     value=self.access_token,
-                    time=redis_cache_expire
+                    time=expire
                 )
         return self
 
     def access_token_with_cache(
             self,
-            cache_type: str = None,
-            cache_key: str = None,
-            cache_expire: Union[float, int, timedelta] = None,
+            types: str = None,
+            key: str = None,
+            expire: Union[float, int, timedelta] = None,
             query_access_token_func_kwargs: dict = {},
     ):
-        if not Draft202012Validator({"type": "string", "minLength": 1}).is_valid(cache_type):
-            cache_type = "diskcache_cache"
-        if cache_type.lower() not in ["diskcache_cache", "redis_cache"]:
-            cache_type = "diskcache_cache"
-        if cache_type.lower() == "diskcache_cache":
+        if not Draft202012Validator({"type": "string", "minLength": 1}).is_valid(types):
+            types = "diskcache_cache"
+        if types.lower() not in ["diskcache_cache", "redis_cache"]:
+            types = "diskcache_cache"
+        if types.lower() == "diskcache_cache":
             return self.access_token_with_diskcache_cache(
-                diskcache_cache_key=cache_key,
-                diskcache_cache_expire=cache_expire,
+                key=key,
+                expire=expire,
                 query_access_token_func_kwargs=query_access_token_func_kwargs
             )
-        if cache_type.lower() == "redis_cache":
+        if types.lower() == "redis_cache":
             return self.access_token_with_redis_cache(
-                redis_cache_key=cache_key,
-                redis_cache_expire=cache_expire,
+                key=key,
+                expire=expire,
                 query_access_token_func_kwargs=query_access_token_func_kwargs
             )
 
