@@ -191,7 +191,7 @@ class Api(object):
         params.setdefault("accessToken", self._access_token)
         response = requests.get(
             url=f"{url}",
-            params=params,
+            params=params.to_dict(),
             **kwargs.to_dict()
         )
         if isinstance(custom_callable, Callable):
@@ -238,7 +238,7 @@ class Api(object):
         params.setdefault("accessToken", self._access_token)
         response = requests.post(
             url=url,
-            params=params,
+            params=params.to_dict(),
             data=data,
             **kwargs.to_dict()
         )
@@ -286,7 +286,7 @@ class Api(object):
         params.setdefault("accessToken", self._access_token)
         response = requests.post(
             url=url,
-            params=params,
+            params=params.to_dict(),
             data=data,
             **kwargs.to_dict()
         )
@@ -337,7 +337,7 @@ class Api(object):
         response = requests.request(
             method=method,
             url=url,
-            params=params,
+            params=params.to_dict(),
             data=data,
             **kwargs.to_dict()
         )
