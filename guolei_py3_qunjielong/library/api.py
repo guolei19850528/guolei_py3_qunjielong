@@ -119,8 +119,7 @@ class Api(object):
                 self._access_token = self.cache_instance.get(cache_key)
         # 用户是否登录
         result = self.get(
-            is_with_access_token=True,
-            url=f"{self.base_url}{UrlsSetting.OPEN__API__GHOME__GETGHOMEINFO}",
+            url=f"{UrlsSetting.OPEN__API__GHOME__GETGHOMEINFO}",
             verify=False,
             timeout=(60, 60)
         )
@@ -140,7 +139,6 @@ class Api(object):
             return self
 
         result = self.get(
-            is_with_access_token=False,
             url=f"{self.base_url}{UrlsSetting.OPEN__AUTH__TOKEN}",
             params={
                 "secret": self.secret,
@@ -149,13 +147,7 @@ class Api(object):
             timeout=(60, 60)
         )
 
-        if Draft202012Validator({
-            "type": "string",
-            "properties": {
-                "data": {"type": "string", "minLength": 1}
-            },
-            "required": ["data"]
-        }).is_valid(result):
+        if Draft202012Validator({"type": "string", "minLength": 1}).is_valid(result):
             self._access_token = result
             # 缓存处理
             if isinstance(self.cache_instance, (diskcache.Cache, redis.Redis, redis.StrictRedis)):
@@ -165,13 +157,11 @@ class Api(object):
                         value=self._access_token,
                         expire=expire
                     )
+
                 if isinstance(self.cache_instance, (redis.Redis, redis.StrictRedis)):
-                    self.cache_instance.hset(
+                    self.cache_instance.setex(
                         name=cache_key,
-                        mapping=self._access_token
-                    )
-                    self.cache_instance.expire(
-                        name=cache_key,
+                        value=self._access_token,
                         time=expire
                     )
 
@@ -179,7 +169,6 @@ class Api(object):
 
     def get(
             self,
-            is_with_access_token=True,
             response_callable: Callable = ResponseCallable.json_addict__code_is_200,
             url: str = None,
             params: Any = None,
@@ -187,7 +176,6 @@ class Api(object):
             **kwargs: Any
     ):
         return self.request(
-            is_with_access_token=is_with_access_token,
             response_callable=response_callable,
             method="GET",
             url=url,
@@ -198,7 +186,6 @@ class Api(object):
 
     def post(
             self,
-            is_with_access_token=True,
             response_callable: Callable = ResponseCallable.json_addict__code_is_200,
             url: str = None,
             params: Any = None,
@@ -208,7 +195,6 @@ class Api(object):
             **kwargs: Any
     ):
         return self.request(
-            is_with_access_token=is_with_access_token,
             response_callable=response_callable,
             method="POST",
             url=url,
@@ -221,7 +207,6 @@ class Api(object):
 
     def request(
             self,
-            is_with_access_token=True,
             response_callable: Callable = ResponseCallable.json_addict__code_is_200,
             method: str = "GET",
             url: str = None,
@@ -233,8 +218,7 @@ class Api(object):
             url = f"/{url}" if not url.startswith("/") else url
             url = f"{self.base_url}{url}"
         params = Dict(params) if isinstance(params, dict) else Dict()
-        if is_with_access_token:
-            params.setdefault("access_token", self._access_token)
+        params.setdefault("accessToken", self._access_token)
         return request(
             response_callable=response_callable,
             method=method,
