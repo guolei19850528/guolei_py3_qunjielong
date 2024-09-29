@@ -9,27 +9,50 @@ Email：[174000902@qq.com]
 Github：https://github.com/guolei19850528/guolei_py3_qunjielong
 =================================================
 """
-import hashlib
 from datetime import timedelta
-from types import NoneType
-from typing import Union, Callable
+from typing import Union, Callable, Any
 
 import diskcache
 import redis
-import requests
 from addict import Dict
+from guolei_py3_requests.library import ResponseCallable, request
 from jsonschema import validate
 from jsonschema.validators import Draft202012Validator
+from requests import Response
 
 
-class ApiUrlSettings:
-    URL__OPEN__AUTH__TOKEN = "/open/auth/token"
-    URL__OPEN__API__GHOME__GETGHOMEINFO = "/open/api/ghome/getGhomeInfo"
-    URL__OPEN__API__GOODS__GET_GOODS_DETAIL = "/open/api/goods/get_goods_detail/"
-    URL__OPEN__API__ORDER__ALL__QUERY_ORDER_LIST = "/open/api/order/all/query_order_list"
-    URL__OPEN__API__ORDER__SINGLE__QUERY_ORDER_INFO = "/open/api/order/single/query_order_info"
-    URL__OPEN__API__ACT__LIST_ACT_INFO = "/open/api/act/list_act_info"
-    URL__OPEN__API__ACT_GOODS__QUERY_ACT_GOODS = "/open/api/act_goods/query_act_goods"
+class ResponseCallable(ResponseCallable):
+    """
+    Response Callable Class
+    """
+
+    @staticmethod
+    def json_addict__code_is_200(response: Response = None, status_code: int = 200):
+        json_addict = ResponseCallable.json_addict(response=response, status_code=status_code)
+        if Draft202012Validator({
+            "type": "object",
+            "properties": {
+                "code": {
+                    "oneOf": [
+                        {"type": "integer", "const": 200},
+                        {"type": "string", "const": "200"},
+                    ],
+                },
+            },
+            "required": ["code", "data"]
+        }).is_valid(json_addict):
+            return json_addict.data
+        return Dict()
+
+
+class UrlsSetting:
+    OPEN__AUTH__TOKEN = "/open/auth/token"
+    OPEN__API__GHOME__GETGHOMEINFO = "/open/api/ghome/getGhomeInfo"
+    OPEN__API__GOODS__GET_GOODS_DETAIL = "/open/api/goods/get_goods_detail/"
+    OPEN__API__ORDER__ALL__QUERY_ORDER_LIST = "/open/api/order/all/query_order_list"
+    OPEN__API__ORDER__SINGLE__QUERY_ORDER_INFO = "/open/api/order/single/query_order_info"
+    OPEN__API__ACT__LIST_ACT_INFO = "/open/api/act/list_act_info"
+    OPEN__API__ACT_GOODS__QUERY_ACT_GOODS = "/open/api/act_goods/query_act_goods"
 
 
 class Api(object):
@@ -75,16 +98,16 @@ class Api(object):
     def access_token(
             self,
             expire: Union[float | int | timedelta] = timedelta(seconds=7100).total_seconds(),
-            custom_callable: Callable = None
+            access_token_callable: Callable = None
     ):
         """
         access token
         :param expire: 过期时间
-        :param custom_callable: 自定义回调 custom_callable(self) if isinstance(custom_callable, Callable)
+        :param access_token_callable: 自定义回调 custom_callable(self) if isinstance(custom_callable, Callable)
         :return: custom_callable(self) if isinstance(custom_callable, Callable) else self
         """
-        if isinstance(custom_callable, Callable):
-            return custom_callable(self)
+        if isinstance(access_token_callable, Callable):
+            return access_token_callable(self)
         validate(instance=self.base_url, schema={"type": "string", "minLength": 1, "pattern": "^http"})
         # 缓存key
         cache_key = f"guolei_py3_qunjielong_api_access_token__{self.secret}"
@@ -95,267 +118,128 @@ class Api(object):
             if isinstance(self.cache_instance, (redis.Redis, redis.StrictRedis)):
                 self._access_token = self.cache_instance.get(cache_key)
         # 用户是否登录
-        response = requests.get(
-            url=f"{self.base_url}{ApiUrlSettings.URL__OPEN__API__GHOME__GETGHOMEINFO}",
-            params={
-                "accessToken": self._access_token,
-            },
+        result = self.get(
+            is_with_access_token=True,
+            url=f"{self.base_url}{UrlsSetting.OPEN__API__GHOME__GETGHOMEINFO}",
             verify=False,
             timeout=(60, 60)
         )
-        if response.status_code == 200:
-            json_addict = response.json()
-            if Draft202012Validator({
-                "type": "object",
-                "properties": {
-                    "code": {
-                        "oneOf": [
-                            {"type": "integer", "const": 200},
-                            {"type": "string", "const": "200"},
-                        ]
+        if Draft202012Validator({
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "ghId": {"type": "integer", "minimum": 1}
                     },
-                    "data": {
-                        "type": "object",
-                        "properties": {
-                            "ghId": {"type": "integer", "minimum": 1}
-                        },
-                        "required": ["ghId"]
-                    }
-                },
-                "required": ["code", "data"]
-            }).is_valid(json_addict):
-                return self
-        response = requests.get(
-            url=f"{self.base_url}{ApiUrlSettings.URL__OPEN__AUTH__TOKEN}",
+                    "required": ["ghId"]
+                }
+            },
+            "required": ["data"]
+        }).is_valid(result):
+            return self
+
+        result = self.get(
+            is_with_access_token=False,
+            url=f"{self.base_url}{UrlsSetting.OPEN__AUTH__TOKEN}",
             params={
                 "secret": self.secret,
             },
             verify=False,
             timeout=(60, 60)
         )
-        if response.status_code == 200:
-            json_addict = Dict(response.json())
-            if Draft202012Validator({
-                "type": "object",
-                "properties": {
-                    "code": {
-                        "oneOf": [
-                            {"type": "integer", "const": 200},
-                            {"type": "string", "const": "200"},
-                        ]
-                    },
-                    "data": {"type": "string", "minLength": 1}
-                },
-                "required": ["code", "data"]
-            }).is_valid(json_addict):
-                self._access_token = json_addict.data
-                # 缓存处理
-                if isinstance(self.cache_instance, (diskcache.Cache, redis.Redis, redis.StrictRedis)):
-                    if isinstance(self.cache_instance, diskcache.Cache):
-                        self.cache_instance.set(
-                            key=cache_key,
-                            value=self._access_token,
-                            expire=expire
-                        )
-                    if isinstance(self.cache_instance, (redis.Redis, redis.StrictRedis)):
-                        self.cache_instance.hset(
-                            name=cache_key,
-                            mapping=self._access_token
-                        )
-                        self.cache_instance.expire(
-                            name=cache_key,
-                            time=expire
-                        )
+
+        if Draft202012Validator({
+            "type": "string",
+            "properties": {
+                "data": {"type": "string", "minLength": 1}
+            },
+            "required": ["data"]
+        }).is_valid(result):
+            self._access_token = result
+            # 缓存处理
+            if isinstance(self.cache_instance, (diskcache.Cache, redis.Redis, redis.StrictRedis)):
+                if isinstance(self.cache_instance, diskcache.Cache):
+                    self.cache_instance.set(
+                        key=cache_key,
+                        value=self._access_token,
+                        expire=expire
+                    )
+                if isinstance(self.cache_instance, (redis.Redis, redis.StrictRedis)):
+                    self.cache_instance.hset(
+                        name=cache_key,
+                        mapping=self._access_token
+                    )
+                    self.cache_instance.expire(
+                        name=cache_key,
+                        time=expire
+                    )
+
         return self
 
     def get(
             self,
-            url: str = "",
-            params: dict = None,
-            kwargs: dict = None,
-            custom_callable: Callable = None
+            is_with_access_token=True,
+            response_callable: Callable = ResponseCallable.json_addict__code_is_200,
+            url: str = None,
+            params: Any = None,
+            headers: Any = None,
+            **kwargs: Any
     ):
-        """
-        use requests.get
-        :param url: requests.get(url=url,params=params,**kwargs) url=base_url+url if not pattern ^http else url
-        :param params: requests.get(url=url,params=params,**kwargs)
-        :param kwargs: requests.get(url=url,params=params,**kwargs)
-        :param custom_callable: custom_callable(response) if isinstance(custom_callable,Callable)
-        :return:custom_callable(response) if isinstance(custom_callable,Callable) else addict.Dict instance
-        """
-        if not Draft202012Validator({"type": "string", "minLength": 1, "pattern": "^http"}).is_valid(url):
-            url = f"/{url}" if not url.startswith("/") else url
-            url = f"{self.base_url}{url}"
-        kwargs = Dict(kwargs) if isinstance(kwargs, dict) else Dict()
-        params = Dict(params) if isinstance(params, dict) else Dict()
-        params.setdefault("accessToken", self._access_token)
-        response = requests.get(
-            url=f"{url}",
-            params=params.to_dict(),
-            **kwargs.to_dict()
+        return self.request(
+            is_with_access_token=is_with_access_token,
+            response_callable=response_callable,
+            method="GET",
+            url=url,
+            params=params,
+            headers=headers,
+            **kwargs
         )
-        if isinstance(custom_callable, Callable):
-            return custom_callable(response)
-        if response.status_code == 200:
-            json_addict = Dict(response.json())
-            if Draft202012Validator({
-                "type": "object",
-                "properties": {
-                    "code": {
-                        "oneOf": [
-                            {"type": "integer", "const": 200},
-                            {"type": "string", "const": "200"},
-                        ],
-                    },
-                },
-                "required": ["code", "data"]
-            }).is_valid(json_addict):
-                return json_addict.data
-        return Dict()
 
     def post(
             self,
-            url: str = "",
-            params: dict = None,
-            data: dict = None,
-            kwargs: dict = None,
-            custom_callable: Callable = None
+            is_with_access_token=True,
+            response_callable: Callable = ResponseCallable.json_addict__code_is_200,
+            url: str = None,
+            params: Any = None,
+            data: Any = None,
+            json: Any = None,
+            headers: Any = None,
+            **kwargs: Any
     ):
-        """
-        use requests.post
-        :param url: requests.post(url=url,params=params,data=data,**kwargs) url=base_url+url if not pattern ^http else url
-        :param params: requests.post(url=url,params=params,data=data,**kwargs)
-        :param data: requests.post(url=url,params=params,data=data,**kwargs)
-        :param kwargs: requests.post(url=url,params=params,data=data,**kwargs)
-        :param custom_callable: custom_callable(response) if isinstance(custom_callable,Callable)
-        :return:custom_callable(response) if isinstance(custom_callable,Callable) else addict.Dict instance
-        """
-        if not Draft202012Validator({"type": "string", "minLength": 1, "pattern": "^http"}).is_valid(url):
-            url = f"/{url}" if not url.startswith("/") else url
-            url = f"{self.base_url}{url}"
-        kwargs = Dict(kwargs) if isinstance(kwargs, dict) else Dict()
-        params = Dict(params) if isinstance(params, dict) else Dict()
-        params.setdefault("accessToken", self._access_token)
-        response = requests.post(
+        return self.request(
+            is_with_access_token=is_with_access_token,
+            response_callable=response_callable,
+            method="POST",
             url=url,
-            params=params.to_dict(),
+            params=params,
             data=data,
-            **kwargs.to_dict()
+            json=json,
+            headers=headers,
+            **kwargs
         )
-        if isinstance(custom_callable, Callable):
-            return custom_callable(response)
-        if response.status_code == 200:
-            json_addict = Dict(response.json())
-            if Draft202012Validator({
-                "type": "object",
-                "properties": {
-                    "code": {
-                        "oneOf": [
-                            {"type": "integer", "const": 200},
-                            {"type": "string", "const": "200"},
-                        ],
-                    },
-                },
-                "required": ["code", "data"]
-            }).is_valid(json_addict):
-                return json_addict.data
-        return Dict()
-
-    def put(
-            self,
-            url: str = "",
-            data: dict = None,
-            params: dict = None,
-            kwargs: dict = None,
-            custom_callable: Callable = None
-    ):
-        """
-        use requests.put
-        :param url: requests.put(url=url,params=params,data=data,**kwargs) url=base_url+url if not pattern ^http else url
-        :param params: requests.put(url=url,params=params,data=data,**kwargs)
-        :param data: requests.put(url=url,params=params,data=data,**kwargs)
-        :param kwargs: requests.put(url=url,params=params,data=data,**kwargs)
-        :param custom_callable: custom_callable(response) if isinstance(custom_callable,Callable)
-        :return:custom_callable(response) if isinstance(custom_callable,Callable) else addict.Dict instance
-        """
-        if not Draft202012Validator({"type": "string", "minLength": 1, "pattern": "^http"}).is_valid(url):
-            url = f"/{url}" if not url.startswith("/") else url
-            url = f"{self.base_url}{url}"
-        kwargs = Dict(kwargs) if isinstance(kwargs, dict) else Dict()
-        params = Dict(params) if isinstance(params, dict) else Dict()
-        params.setdefault("accessToken", self._access_token)
-        response = requests.post(
-            url=url,
-            params=params.to_dict(),
-            data=data,
-            **kwargs.to_dict()
-        )
-        if isinstance(custom_callable, Callable):
-            return custom_callable(response)
-        if response.status_code == 200:
-            json_addict = Dict(response.json())
-            if Draft202012Validator({
-                "type": "object",
-                "properties": {
-                    "code": {
-                        "oneOf": [
-                            {"type": "integer", "const": 200},
-                            {"type": "string", "const": "200"},
-                        ],
-                    },
-                },
-                "required": ["code", "data"]
-            }).is_valid(json_addict):
-                return json_addict.data
-        return Dict()
 
     def request(
             self,
+            is_with_access_token=True,
+            response_callable: Callable = ResponseCallable.json_addict__code_is_200,
             method: str = "GET",
-            url: str = "",
-            params: dict = None,
-            data: dict = None,
-            kwargs: dict = None,
-            custom_callable: Callable = None
+            url: str = None,
+            params: Any = None,
+            headers: Any = None,
+            **kwargs
     ):
-        """
-        use requests.request
-        :param method: requests.request(method=method,url=url,params=params,data=data,**kwargs)
-        :param url: requests.request(method=method,url=url,params=params,data=data,**kwargs) url=base_url+url if not pattern ^http else url
-        :param params: requests.request(method=method,url=url,params=params,data=data,**kwargs)
-        :param data: requests.request(method=method,url=url,params=params,data=data,**kwargs)
-        :param kwargs: requests.request(method=method,url=url,params=params,data=data,**kwargs)
-        :param custom_callable: custom_callable(response) if isinstance(custom_callable,Callable)
-        :return:custom_callable(response) if isinstance(custom_callable,Callable) else addict.Dict instance
-        """
         if not Draft202012Validator({"type": "string", "minLength": 1, "pattern": "^http"}).is_valid(url):
             url = f"/{url}" if not url.startswith("/") else url
             url = f"{self.base_url}{url}"
-        kwargs = Dict(kwargs) if isinstance(kwargs, dict) else Dict()
         params = Dict(params) if isinstance(params, dict) else Dict()
-        params.setdefault("accessToken", self._access_token)
-        response = requests.request(
+        if is_with_access_token:
+            params.setdefault("access_token", self._access_token)
+        return request(
+            response_callable=response_callable,
             method=method,
             url=url,
-            params=params.to_dict(),
-            data=data,
-            **kwargs.to_dict()
+            params=params,
+            headers=headers,
+            **kwargs
         )
-        if isinstance(custom_callable, Callable):
-            return custom_callable(response)
-        if response.status_code == 200:
-            json_addict = Dict(response.json())
-            if Draft202012Validator({
-                "type": "object",
-                "properties": {
-                    "code": {
-                        "oneOf": [
-                            {"type": "integer", "const": 200},
-                            {"type": "string", "const": "200"},
-                        ],
-                    },
-                },
-                "required": ["code", "data"]
-            }).is_valid(json_addict):
-                return json_addict.data
-        return Dict()
