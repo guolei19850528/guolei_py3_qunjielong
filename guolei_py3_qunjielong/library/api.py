@@ -164,7 +164,6 @@ class Api(object):
                         value=self._access_token,
                         time=expire
                     )
-
         return self
 
     def get(
