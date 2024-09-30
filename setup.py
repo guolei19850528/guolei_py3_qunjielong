@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 setup(
     name="guolei-py3-qunjielong",
-    version="2.0.3",
+    version="2.0.4",
     description="群接龙 API",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -18,12 +18,13 @@ setup(
     keywors=["qunjielong", "群接龙"],
     packages=setuptools.find_packages('./'),
     install_requires=[
+        "guolei-py3-requests",
+        "requests",
+        "diskcache",
+        "redis",
         "addict",
         "retrying",
         "jsonschema",
-        "guolei-py3-requests",
-        "redis",
-        "diskcache"
     ],
     python_requires='>=3.0',
     zip_safe=False
