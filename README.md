@@ -10,21 +10,19 @@ from lxml.parser import result
 ```python
 import diskcache
 
-diskcache_default_instance = diskcache.Cache()
-
 from guolei_py3_qunjielong.library.api import (
     Api as QunjielongApi,
-    ApiUrlSettings as QunjielongApiUrlSettings
+    UrlSetting as QunjielongApiUrlSettings
 )
 
 qunjielong_api: QunjielongApi = QunjielongApi(
     base_url="https://openapi.qunjielong.com/",
     secret="<YOUR SECRET>",
-    cache_instance=diskcache_default_instance
+    cache_instance=diskcache.Cache()
 )
 
 result: dict = qunjielong_api.access_token().get(
-    url=QunjielongApiUrlSettings.URL__OPEN__API__GHOME__GETGHOMEINFO
+    path=QunjielongApiUrlSettings.URL__OPEN__API__GHOME__GETGHOMEINFO
 )
 
 ```
