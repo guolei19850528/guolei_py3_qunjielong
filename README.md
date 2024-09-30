@@ -12,7 +12,7 @@ import diskcache
 
 from guolei_py3_qunjielong.library.api import (
     Api as QunjielongApi,
-    UrlSetting as QunjielongApiUrlSettings
+    UrlSetting as QunjielongApiUrlSetting
 )
 
 qunjielong_api: QunjielongApi = QunjielongApi(
@@ -22,7 +22,7 @@ qunjielong_api: QunjielongApi = QunjielongApi(
 )
 
 result: dict = qunjielong_api.access_token().get(
-    path=QunjielongApiUrlSettings.URL__OPEN__API__GHOME__GETGHOMEINFO
+    path=QunjielongApiUrlSetting.URL__OPEN__API__GHOME__GETGHOMEINFO
 )
 
 ```
