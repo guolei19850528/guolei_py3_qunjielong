@@ -14,6 +14,7 @@ from typing import Union, Callable, Any
 
 import diskcache
 import redis
+import requests
 from addict import Dict
 from guolei_py3_requests.library import ResponseCallable, request
 from jsonschema import validate
@@ -21,31 +22,20 @@ from jsonschema.validators import Draft202012Validator
 from requests import Response
 
 
-class ResponseCallable(ResponseCallable):
+class ResponseCallable(object):
     """
     Response Callable Class
     """
 
     @staticmethod
-    def json_addict__code_is_200(response: Response = None, status_code: int = 200):
-        json_addict = ResponseCallable.json_addict(response=response, status_code=status_code)
-        if Draft202012Validator({
-            "type": "object",
-            "properties": {
-                "code": {
-                    "oneOf": [
-                        {"type": "integer", "const": 200},
-                        {"type": "string", "const": "200"},
-                    ],
-                },
-            },
-            "required": ["code", "data"]
-        }).is_valid(json_addict):
-            return json_addict.data
-        return Dict()
+    def json_code_200(response: Response = None, status_code: int = 200):
+        json_data = response.json() if response.status_code == status_code else dict()
+        if int(json_data.get("code", -1)) == 200:
+            return json_data.get("data",dict)
+        return None
 
 
-class UrlsSetting:
+class UrlSetting(object):
     OPEN__AUTH__TOKEN = "/open/auth/token"
     OPEN__API__GHOME__GETGHOMEINFO = "/open/api/ghome/getGhomeInfo"
     OPEN__API__GOODS__GET_GOODS_DETAIL = "/open/api/goods/get_goods_detail/"
@@ -95,134 +85,157 @@ class Api(object):
     def cache_instance(self, cache_instance):
         self._cache_instance = cache_instance
 
-    def access_token(
+    def get_access_token_by_cache(self, name: str = None):
+        name = name or f"guolei_py3_qunjielong_api_access_token__{self.secret}"
+        if isinstance(self.cache_instance, diskcache.Cache):
+            self._access_token = self.cache_instance.get(name)
+        if isinstance(self.cache_instance, (redis.Redis, redis.StrictRedis)):
+            self._access_token = self.cache_instance.get(name)
+        return self._access_token or ""
+
+    def put_access_token_to_cache(
             self,
-            expire: Union[float | int | timedelta] = timedelta(seconds=7100).total_seconds(),
-            access_token_callable: Callable = None
+            name: str = None,
+            expire: Union[float, int, timedelta] = None,
+            access_token: str = None
     ):
+        name = name or f"guolei_py3_qunjielong_api_access_token__{self.secret}"
+        access_token = access_token or self._access_token
+        if isinstance(self.cache_instance, diskcache.Cache):
+            return self.cache_instance.set(
+                key=name,
+                value=access_token,
+                expire=expire or timedelta(seconds=7100).total_seconds()
+            )
+        if isinstance(self.cache_instance, (redis.Redis, redis.StrictRedis)):
+            self.cache_instance.setex(
+                name=name,
+                value=access_token,
+                time=expire or timedelta(seconds=7100),
+            )
+            return True
+        return False
+
+    def get(self, on_response_callback: Callable = ResponseCallable.json_code_200, path: str = None, **kwargs):
+        """
+        execute get by requests.get
+
+        params.setdefault("accessToken", self._access_token)
+
+        :param on_response_callback: response callback
+        :param path: if url is None: url=f"{self.base_url}{path}"
+        :param kwargs: requests.get(**kwargs)
+        :return: on_response_callback(response) or response
+        """
+        path = kwargs.get("url", None) or f"{self.base_url}{path}"
+        params = kwargs.get("params", dict())
+        params.setdefault("accessToken", self._access_token)
+        kwargs.update([
+            ("params", params),
+            ("url", path),
+        ])
+        response = requests.get(**kwargs)
+        if isinstance(on_response_callback, Callable):
+            return on_response_callback(response)
+        return response
+
+    def post(self, on_response_callback: Callable = ResponseCallable.json_code_200, path: str = None, **kwargs):
+        """
+        execute post by requests.post
+
+        params.setdefault("accessToken", self._access_token)
+
+        :param on_response_callback: response callback
+        :param path: if url is None: url=f"{self.base_url}{path}"
+        :param kwargs: requests.get(**kwargs)
+        :return: on_response_callback(response) or response
+        """
+        path = kwargs.get("url", None) or f"{self.base_url}{path}"
+        params = kwargs.get("params", dict())
+        params.setdefault("accessToken", self._access_token)
+        kwargs.update([
+            ("params", params),
+            ("url", path),
+        ])
+        response = requests.post(**kwargs)
+        if isinstance(on_response_callback, Callable):
+            return on_response_callback(response)
+        return response
+
+    def put(self, on_response_callback: Callable = ResponseCallable.json_code_200, path: str = None, **kwargs):
+        """
+        execute put by requests.put
+
+        params.setdefault("accessToken", self._access_token)
+
+        :param on_response_callback: response callback
+        :param path: if url is None: url=f"{self.base_url}{path}"
+        :param kwargs: requests.get(**kwargs)
+        :return: on_response_callback(response) or response
+        """
+        path = kwargs.get("url", None) or f"{self.base_url}{path}"
+        params = kwargs.get("params", dict())
+        params.setdefault("accessToken", self._access_token)
+        kwargs.update([
+            ("params", params),
+            ("url", path),
+        ])
+        response = requests.put(**kwargs)
+        if isinstance(on_response_callback, Callable):
+            return on_response_callback(response)
+        return response
+
+    def request(self, on_response_callback: Callable = ResponseCallable.json_code_200, path: str = None,
+                **kwargs):
+        """
+        execute request by requests.request
+
+        params.setdefault("accessToken", self._access_token)
+
+        :param on_response_callback: response callback
+        :param path: if url is None: url=f"{self.base_url}{path}"
+        :param kwargs: requests.get(**kwargs)
+        :return: on_response_callback(response) or response
+        """
+        path = kwargs.get("url", None) or f"{self.base_url}{path}"
+        params = kwargs.get("params", dict())
+        params.setdefault("accessToken", self._access_token)
+        kwargs.update([
+            ("params", params),
+            ("url", path),
+        ])
+        response = requests.request(**kwargs)
+        if isinstance(on_response_callback, Callable):
+            return on_response_callback(response)
+        return response
+
+    def access_token(self):
         """
         access token
-        :param expire: 过期时间
-        :param access_token_callable: 自定义回调 custom_callable(self) if isinstance(custom_callable, Callable)
-        :return: custom_callable(self) if isinstance(custom_callable, Callable) else self
+        :return:
         """
-        if isinstance(access_token_callable, Callable):
-            return access_token_callable(self)
-        validate(instance=self.base_url, schema={"type": "string", "minLength": 1, "pattern": "^http"})
-        # 缓存key
-        cache_key = f"guolei_py3_qunjielong_api_access_token__{self.secret}"
-        # 使用缓存
-        if isinstance(self.cache_instance, (diskcache.Cache, redis.Redis, redis.StrictRedis)):
-            if isinstance(self.cache_instance, diskcache.Cache):
-                self._access_token = self.cache_instance.get(cache_key)
-            if isinstance(self.cache_instance, (redis.Redis, redis.StrictRedis)):
-                self._access_token = self.cache_instance.get(cache_key)
-        # 用户是否登录
+        self._access_token = self.get_access_token_by_cache()
         result = self.get(
-            url=f"{UrlsSetting.OPEN__API__GHOME__GETGHOMEINFO}",
+            path=f"{UrlSetting.OPEN__API__GHOME__GETGHOMEINFO}",
             verify=False,
             timeout=(60, 60)
         )
         if Draft202012Validator({
             "type": "object",
             "properties": {
-                "data": {
-                    "type": "object",
-                    "properties": {
-                        "ghId": {"type": "integer", "minimum": 1}
-                    },
-                    "required": ["ghId"]
-                }
+                "ghId": {"type": "integer", "minimum": 1},
             },
-            "required": ["data"]
+            "required": ["ghId"]
         }).is_valid(result):
             return self
-
         result = self.get(
-            url=f"{self.base_url}{UrlsSetting.OPEN__AUTH__TOKEN}",
+            path=f"{UrlSetting.OPEN__AUTH__TOKEN}",
             params={
                 "secret": self.secret,
             },
             verify=False,
             timeout=(60, 60)
         )
-
         if Draft202012Validator({"type": "string", "minLength": 1}).is_valid(result):
             self._access_token = result
-            # 缓存处理
-            if isinstance(self.cache_instance, (diskcache.Cache, redis.Redis, redis.StrictRedis)):
-                if isinstance(self.cache_instance, diskcache.Cache):
-                    self.cache_instance.set(
-                        key=cache_key,
-                        value=self._access_token,
-                        expire=expire
-                    )
-
-                if isinstance(self.cache_instance, (redis.Redis, redis.StrictRedis)):
-                    self.cache_instance.setex(
-                        name=cache_key,
-                        value=self._access_token,
-                        time=expire
-                    )
         return self
-
-    def get(
-            self,
-            response_callable: Callable = ResponseCallable.json_addict__code_is_200,
-            url: str = None,
-            params: Any = None,
-            headers: Any = None,
-            **kwargs: Any
-    ):
-        return self.request(
-            response_callable=response_callable,
-            method="GET",
-            url=url,
-            params=params,
-            headers=headers,
-            **kwargs
-        )
-
-    def post(
-            self,
-            response_callable: Callable = ResponseCallable.json_addict__code_is_200,
-            url: str = None,
-            params: Any = None,
-            data: Any = None,
-            json: Any = None,
-            headers: Any = None,
-            **kwargs: Any
-    ):
-        return self.request(
-            response_callable=response_callable,
-            method="POST",
-            url=url,
-            params=params,
-            data=data,
-            json=json,
-            headers=headers,
-            **kwargs
-        )
-
-    def request(
-            self,
-            response_callable: Callable = ResponseCallable.json_addict__code_is_200,
-            method: str = "GET",
-            url: str = None,
-            params: Any = None,
-            headers: Any = None,
-            **kwargs
-    ):
-        if not Draft202012Validator({"type": "string", "minLength": 1, "pattern": "^http"}).is_valid(url):
-            url = f"/{url}" if not url.startswith("/") else url
-            url = f"{self.base_url}{url}"
-        params = Dict(params) if isinstance(params, dict) else Dict()
-        params.setdefault("accessToken", self._access_token)
-        return request(
-            response_callable=response_callable,
-            method=method,
-            url=url,
-            params=params,
-            headers=headers,
-            **kwargs
-        )
