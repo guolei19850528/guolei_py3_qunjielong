@@ -67,6 +67,7 @@ class Api(Request):
             secret: str = "",
             cache_instance: Union[diskcache.Cache, redis.Redis, redis.StrictRedis] = None,
     ):
+        super().__init__()
         self._base_url = base_url
         self._secret = secret
         self._cache_instance = cache_instance
