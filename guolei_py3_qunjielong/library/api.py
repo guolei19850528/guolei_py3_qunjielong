@@ -16,22 +16,33 @@ import diskcache
 import redis
 import requests
 from addict import Dict
-from guolei_py3_requests.library import ResponseCallable, request
+from guolei_py3_requests.library import ResponseCallback, Request
 from jsonschema import validate
 from jsonschema.validators import Draft202012Validator
 from requests import Response
 
 
-class ResponseCallable(object):
+class ResponseCallback(ResponseCallback):
     """
     Response Callable Class
     """
 
     @staticmethod
     def json_code_200(response: Response = None, status_code: int = 200):
-        json_data = response.json() if response.status_code == status_code else dict()
-        if int(json_data.get("code", -1)) == 200:
-            return json_data.get("data",dict)
+        json_addict = ResponseCallback.json_addict(response=response, status_code=status_code)
+        if Draft202012Validator({
+            "type": "object",
+            "properties": {
+                "code": {
+                    "oneOf": [
+                        {"type": "integer", "const": 200},
+                        {"type": "string", "const": 200},
+                    ],
+                }
+            },
+            "required": ["code"],
+        }).is_valid(json_addict):
+            return json_addict.data
         return None
 
 
@@ -45,7 +56,7 @@ class UrlSetting(object):
     OPEN__API__ACT_GOODS__QUERY_ACT_GOODS = "/open/api/act_goods/query_act_goods"
 
 
-class Api(object):
+class Api(Request):
     """
     @see https://console-docs.apipost.cn/preview/b4e4577f34cac87a/1b45a97352d07e60/
     """
@@ -116,7 +127,7 @@ class Api(object):
             return True
         return False
 
-    def get(self, on_response_callback: Callable = ResponseCallable.json_code_200, path: str = None, **kwargs):
+    def get(self, on_response_callback: Callable = ResponseCallback.json_code_200, path: str = None, **kwargs):
         """
         execute get by requests.get
 
@@ -127,19 +138,15 @@ class Api(object):
         :param kwargs: requests.get(**kwargs)
         :return: on_response_callback(response) or response
         """
-        path = kwargs.get("url", None) or f"{self.base_url}{path}"
-        params = kwargs.get("params", dict())
-        params.setdefault("accessToken", self._access_token)
-        kwargs.update([
-            ("params", params),
-            ("url", path),
-        ])
-        response = requests.get(**kwargs)
-        if isinstance(on_response_callback, Callable):
-            return on_response_callback(response)
-        return response
+        kwargs=Dict(kwargs)
+        kwargs.setdefault("url", f"{self.base_url}{path}")
+        kwargs.params=Dict({
+            "accessToken":self._access_token,
+            **kwargs.params
+        })
+        return super().get(on_response_callback=on_response_callback, **kwargs.to_dict())
 
-    def post(self, on_response_callback: Callable = ResponseCallable.json_code_200, path: str = None, **kwargs):
+    def post(self, on_response_callback: Callable = ResponseCallback.json_code_200, path: str = None, **kwargs):
         """
         execute post by requests.post
 
@@ -150,19 +157,15 @@ class Api(object):
         :param kwargs: requests.get(**kwargs)
         :return: on_response_callback(response) or response
         """
-        path = kwargs.get("url", None) or f"{self.base_url}{path}"
-        params = kwargs.get("params", dict())
-        params.setdefault("accessToken", self._access_token)
-        kwargs.update([
-            ("params", params),
-            ("url", path),
-        ])
-        response = requests.post(**kwargs)
-        if isinstance(on_response_callback, Callable):
-            return on_response_callback(response)
-        return response
+        kwargs = Dict(kwargs)
+        kwargs.setdefault("url", f"{self.base_url}{path}")
+        kwargs.params = Dict({
+            "accessToken": self._access_token,
+            **kwargs.params
+        })
+        return super().post(on_response_callback=on_response_callback, **kwargs.to_dict())
 
-    def put(self, on_response_callback: Callable = ResponseCallable.json_code_200, path: str = None, **kwargs):
+    def put(self, on_response_callback: Callable = ResponseCallback.json_code_200, path: str = None, **kwargs):
         """
         execute put by requests.put
 
@@ -173,41 +176,13 @@ class Api(object):
         :param kwargs: requests.get(**kwargs)
         :return: on_response_callback(response) or response
         """
-        path = kwargs.get("url", None) or f"{self.base_url}{path}"
-        params = kwargs.get("params", dict())
-        params.setdefault("accessToken", self._access_token)
-        kwargs.update([
-            ("params", params),
-            ("url", path),
-        ])
-        response = requests.put(**kwargs)
-        if isinstance(on_response_callback, Callable):
-            return on_response_callback(response)
-        return response
-
-    def request(self, on_response_callback: Callable = ResponseCallable.json_code_200, path: str = None,
-                **kwargs):
-        """
-        execute request by requests.request
-
-        params.setdefault("accessToken", self._access_token)
-
-        :param on_response_callback: response callback
-        :param path: if url is None: url=f"{self.base_url}{path}"
-        :param kwargs: requests.get(**kwargs)
-        :return: on_response_callback(response) or response
-        """
-        path = kwargs.get("url", None) or f"{self.base_url}{path}"
-        params = kwargs.get("params", dict())
-        params.setdefault("accessToken", self._access_token)
-        kwargs.update([
-            ("params", params),
-            ("url", path),
-        ])
-        response = requests.request(**kwargs)
-        if isinstance(on_response_callback, Callable):
-            return on_response_callback(response)
-        return response
+        kwargs = Dict(kwargs)
+        kwargs.setdefault("url", f"{self.base_url}{path}")
+        kwargs.params = Dict({
+            "accessToken": self._access_token,
+            **kwargs.params
+        })
+        return super().put(on_response_callback=on_response_callback, **kwargs.to_dict())
 
     def access_token(self):
         """
